@@ -85,6 +85,13 @@ $active_tab_sidebar = $_GET['page'] ?? 'dashboard';
         }
         ?>
     });
+
+    const statusDropdown = document.getElementById('jadwalStatus');
+    if (statusDropdown) {
+        statusDropdown.addEventListener('change', function() {
+            toggleTimeInputs(this.value);
+        });
+    }
 </script>
 
 </html>

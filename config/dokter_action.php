@@ -6,44 +6,99 @@ require 'connection.php';
 $action = $_POST['action'] ?? '';
 $id = $_POST['dokterId'] ?? null;
 $nama = $_POST['namaDokter'] ?? '';
+$poli = $_POST['poliDokter'] ?? '';
 $page = 'dokter';
 
 if (isset($_POST['source']) && $_POST['source'] == 'dokterForm') {
 
     // CREATE action
-    if ($action == 'create' && !empty($nama)) {
-        $stmt = $conn->prepare("INSERT INTO dokter (nama) VALUES (?)");
-        $stmt->bind_param("s", $nama);
-        if ($stmt->execute()) {
+    if ($action == 'create') {
+        if (empty($nama) || empty($poli)) {
             $_SESSION['toast_message'] = [
-                'text' => 'Data dokter berhasil ditambahkan.',
-                'type' => 'success'
+                'text' => 'Nama dokter dan poli harus diisi.',
+                'type' => 'error'
             ];
+            header("Location: ?page=" . $page);
+            exit();
+        }
+
+        $stmt = $conn->prepare("INSERT INTO dokter (nama, poli) VALUES (?, ?)");
+        if (!$stmt) {
+            $_SESSION['toast_message'] = [
+                'text' => 'Error preparing statement: ' . $conn->error,
+                'type' => 'error'
+            ];
+            header("Location: ?page=" . $page);
+            exit();
+        }
+
+        $stmt->bind_param("ss", $nama, $poli);
+
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                $_SESSION['toast_message'] = [
+                    'text' => 'Data dokter berhasil ditambahkan.',
+                    'type' => 'success'
+                ];
+            } else {
+                $_SESSION['toast_message'] = [
+                    'text' => 'Data tidak tersimpan ke database.',
+                    'type' => 'error'
+                ];
+            }
         } else {
             $_SESSION['toast_message'] = [
-                'text' => 'Gagal menambahkan data dokter.',
+                'text' => 'Gagal menambahkan data dokter: ' . $stmt->error,
                 'type' => 'error'
             ];
         }
+
+        $stmt->close();
         header("Location: ?page=" . $page);
         exit();
     }
 
     // UPDATE action
     if ($action == 'update' && !empty($id) && !empty($nama)) {
-        $stmt = $conn->prepare("UPDATE dokter SET nama = ? WHERE id = ?");
-        $stmt->bind_param("si", $nama, $id);
-        if ($stmt->execute()) {
+        $stmt = $conn->prepare("UPDATE dokter SET nama = ?, poli = ? WHERE id = ?");
+        if (!$stmt) {
             $_SESSION['toast_message'] = [
-                'text' => 'Data dokter berhasil diubah.',
-                'type' => 'success'
+                'text' => 'Error preparing statement: ' . $conn->error,
+                'type' => 'error'
             ];
+            header("Location: ?page=" . $page);
+            exit();
+        }
+
+        if (!$stmt->bind_param("ssi", $nama, $poli, $id)) {
+            $_SESSION['toast_message'] = [
+                'text' => 'Error binding parameters: ' . $stmt->error,
+                'type' => 'error'
+            ];
+            $stmt->close();
+            header("Location: ?page=" . $page);
+            exit();
+        }
+
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                $_SESSION['toast_message'] = [
+                    'text' => 'Data dokter berhasil diubah.',
+                    'type' => 'success'
+                ];
+            } else {
+                $_SESSION['toast_message'] = [
+                    'text' => 'Tidak ada perubahan data.',
+                    'type' => 'info'
+                ];
+            }
         } else {
             $_SESSION['toast_message'] = [
-                'text' => 'Gagal mengubah data dokter.',
+                'text' => 'Gagal mengubah data dokter: ' . $stmt->error,
                 'type' => 'error'
             ];
         }
+        $stmt->close();
         header("Location: ?page=" . $page);
         exit();
     }

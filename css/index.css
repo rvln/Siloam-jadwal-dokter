@@ -26,7 +26,7 @@ body::before {
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 24px;
@@ -114,8 +114,9 @@ body::before {
 }
 
 .table-container {
-  padding: 40px;
+  padding: 20px;
   overflow-x: auto;
+  overflow: hidden;
 }
 
 .schedule-table {
@@ -130,7 +131,7 @@ body::before {
 .schedule-table th {
   background: linear-gradient(135deg, #2c5aa0 0%, #1e4080 100%);
   color: white;
-  padding: 10px 16px;
+  padding: 15px 16px;
   text-align: center;
   font-weight: 600;
   font-size: 1rem;
@@ -150,7 +151,7 @@ body::before {
 }
 
 .schedule-table td {
-  padding: 14px 16px;
+  padding: 14px 10px;
   text-align: center;
   border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
@@ -173,11 +174,11 @@ body::before {
 }
 
 .doctor-name {
-  font-weight: 600;
+  font-weight: 700;
   text-align: left;
   padding-left: 24px;
-  font-size: 1.1rem;
-  color: #2c5aa0;
+  font-size: 1.5rem;
+  color: #000000;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -191,14 +192,14 @@ body::before {
 }
 
 .doctor-name:hover {
-  color: #1e4080;
+  color: #4e4e4e;
   transform: translateX(4px);
 }
 
 .time-slot {
   color: #333;
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 1.2rem;
+  font-weight: 600;
   background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
   padding: 12px 16px;
   border-radius: 12px;
@@ -317,4 +318,13 @@ body::before {
     padding: 8px 12px;
     min-width: 100px;
   }
+}
+
+#clock {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1e4080;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-align: center;
 }

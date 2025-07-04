@@ -4,6 +4,33 @@ require_once 'connection.php';
 
 $action = $_POST['action'] ?? '';
 $source = $_POST['source'] ?? '';
+$id = $_POST['id'] ?? $_POST['jadwalId'] ?? null; // Bisa menerima 'id' atau 'jadwalId'
+$status = $_POST['status'] ?? null;
+$page = 'jadwal';
+
+// update status
+if (isset($_POST['source']) && $_POST['source'] == 'jadwal_form') {
+    if ($action == 'update_status' && !empty($id) && isset($status)) {
+
+        if ($status == 'Cuti') {
+            $stmt = $conn->prepare("UPDATE jadwal SET status = ? WHERE id = ?");
+            $stmt->bind_param("si", $status, $id);
+        } else {
+            // Jika status diubah kembali ke 'Aktif'
+            $stmt = $conn->prepare("UPDATE jadwal SET status = ? WHERE id = ?");
+            $stmt->bind_param("si", $status, $id);
+        }
+
+        if ($stmt->execute()) {
+            $_SESSION['toast_message'] = ['text' => 'Status berhasil diperbarui!', 'type' => 'success'];
+        } else {
+            $_SESSION['toast_message'] = ['text' => 'Gagal memperbarui status.', 'type' => 'error'];
+        }
+    }
+}
+
+$action = $_POST['action'] ?? '';
+$source = $_POST['source'] ?? '';
 $id = $_POST['jadwalId'] ?? null;
 $dokter_id = $_POST['dokterId'] ?? null;
 $hari = $_POST['hari'] ?? '';
@@ -42,10 +69,6 @@ if (isset($_POST['source']) && $_POST['source'] == 'jadwalForm') {
 
     //  UPDATE action
     if ($action == 'update' && !empty($id)) {
-        if ($status == 'Cuti') {
-            $jam_mulai = null;
-            $jam_selesai = null;
-        }
 
         $stmt = $conn->prepare("UPDATE jadwal SET dokter_id=?, hari=?, jam_mulai=?, jam_selesai=?, status=? WHERE id=?");
         $stmt->bind_param("issssi", $dokter_id, $hari, $jam_mulai, $jam_selesai, $status, $id);

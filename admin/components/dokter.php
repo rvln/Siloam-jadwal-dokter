@@ -3,6 +3,7 @@
 $data_dokter = "SELECT 
                     d.id, 
                     d.nama, 
+                    d.poli,
                     COUNT(j.id) as jumlah_jadwal 
                 FROM dokter d 
                 LEFT JOIN jadwal j ON d.id = j.dokter_id 
@@ -30,9 +31,9 @@ $list_dokter = query($data_dokter);
                 <table class="table" id="dokterTable">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Nama</th>
                             <th>Jumlah Jadwal</th>
+                            <th>Poli</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -44,9 +45,9 @@ $list_dokter = query($data_dokter);
                         <?php else: ?>
                             <?php foreach ($list_dokter as $dokter): ?>
                                 <tr>
-                                    <td><?= $dokter['id'] ?></td>
                                     <td><?= htmlspecialchars($dokter['nama']) ?></td>
                                     <td><?= $dokter['jumlah_jadwal'] ?></td>
+                                    <td><?= $dokter['poli'] ?> </td>
                                     <td class="actions">
                                         <button class="btn btn-warning btn-sm" onclick="openEditDokterModal(<?php echo $dokter['id']; ?>, '<?php echo htmlspecialchars($dokter['nama'], ENT_QUOTES); ?>')">
                                             &#9998; Edit
@@ -75,19 +76,35 @@ $list_dokter = query($data_dokter);
         </div>
 
         <div class="modal-body">
-            <form id="dokterForm" method="POST" action="../config/dokter_action.php">
+            <!-- Error message placeholder -->
+            <div id="dokterFormError"></div>
+            <form id="dokterForm" method="POST" action="../config/dokter_action.php" onsubmit="return validateDokterForm();">
                 <input type="hidden" name="source" value="dokterForm">
                 <input type="hidden" name="action" id="dokterModalAction" value="create">
                 <input type="hidden" name="dokterId" id="dokterId">
                 <div class="form-group">
                     <label for="namaDokter" class="form-label">Nama Dokter</label>
                     <input type="text" name="namaDokter" id="namaDokter" class="form-control" required>
+                    <label for="poliDokter" class="form-label">Poli</label>
+                    <select name="poliDokter" id="poliDokter" class="form-select" required>
+                        <option value="">Pilih Poli</option>
+                        <option value="Umum">Umum</option>
+                        <option value="Gigi">Gigi</option>
+                        <option value="Kandungan">Kandungan</option>
+                        <option value="Anak">Anak</option>
+                        <option value="THT">THT</option>
+                        <option value="Mata">Mata</option>
+                        <option value="Bedah">Bedah</option>
+                        <option value="Psikiatri">Psikiatri</option>
+                        <option value="Rehabilitasi">Rehabilitasi</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-danger" onclick="closeModal('dokterModal')">Batal</button>
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('dokterForm').submit();">Simpan</button>
+            <button type="button" class="btn btn-primary" onclick="if(validateDokterForm()){document.getElementById('dokterForm').submit();}">Simpan</button>
         </div>
     </div>
 </div>

@@ -39,7 +39,7 @@ foreach ($list_jadwal as $jadwal) {
     ];
 }
 
-$urutan_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu', 'Minggu'];
+$urutan_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 ?>
 
 <!DOCTYPE html>
@@ -55,6 +55,7 @@ $urutan_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu', 'Minggu'
 
 <body>
     <div class="container">
+
         <div class="header">
             <div class="header-content">
                 <img src="public/logo.png" alt="Logo Siloam" class="logo">
@@ -65,53 +66,61 @@ $urutan_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu', 'Minggu'
         </div>
 
         <div class="table-container">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th class="dokter">&#9937; Dokter</th>
-                        <th>&#x1F5D3; Senin</th>
-                        <th>&#x1F5D3; Selasa</th>
-                        <th>&#x1F5D3; Rabu</th>
-                        <th>&#x1F5D3; Kamis</th>
-                        <th>&#x1F5D3; Jum'at</th>
-                        <th>&#x1F5D3; Sabtu</th>
-                        <th>&#x1F5D3; Minggu</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($jadwal_terkelompok)): ?>
+            <div>
+                <div id="clock">Loading</div>
+            </div>
+            <div class="table-scroll-wrapper">
+                <table class="schedule-table">
+                    <thead>
                         <tr>
-                            <td colspan="8" class="text-center">Belum ada data jadwal.</td>
+                            <th class="dokter">&#9937; Dokter</th>
+                            <th>&#x1F5D3; Senin</th>
+                            <th>&#x1F5D3; Selasa</th>
+                            <th>&#x1F5D3; Rabu</th>
+                            <th>&#x1F5D3; Kamis</th>
+                            <th>&#x1F5D3; Jum'at</th>
+                            <th>&#x1F5D3; Sabtu</th>
+                            <th>&#x1F5D3; Minggu</th>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($jadwal_terkelompok as $nama_dokter => $jadwal_harian): ?>
+                    </thead>
+
+                    <tbody id="schedule-tbody">
+                        <?php if (empty($jadwal_terkelompok)): ?>
                             <tr>
-                                <td class="doctor-name"><?= htmlspecialchars($nama_dokter) ?></td>
-                                <?php foreach ($urutan_hari as $hari): ?>
-                                    <td>
-                                        <?php if (isset($jadwal_harian[$hari])): ?>
-                                            <?php foreach ($jadwal_harian[$hari] as $slot): ?>
-                                                <?php
-                                                // Tambahkan class 'cuti' jika statusnya Cuti
-                                                $class_status = ($slot['status'] == 'Cuti') ? 'cuti' : '';
-                                                ?>
-                                                <span class="time-slot <?= $class_status ?>"><?= $slot['teks'] ?></span><br>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <!-- Jika tidak ada jadwal, tampilkan tanda strip -->
-                                            <span class="no-schedule">—</span>
-                                        <?php endif; ?>
-                                    </td>
-                                <?php endforeach; ?>
+                                <td colspan="8" class="text-center">Belum ada data jadwal.</td>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                        <?php else: ?>
+                            <?php foreach ($jadwal_terkelompok as $nama_dokter => $jadwal_harian): ?>
+                                <tr>
+                                    <td class="doctor-name"><?= htmlspecialchars($nama_dokter) ?></td>
+                                    <?php foreach ($urutan_hari as $hari): ?>
+                                        <td>
+                                            <?php if (isset($jadwal_harian[$hari])): ?>
+                                                <?php foreach ($jadwal_harian[$hari] as $slot): ?>
+                                                    <?php
+                                                    // Tambahkan class 'cuti' jika statusnya Cuti
+                                                    $class_status = ($slot['status'] == 'Cuti') ? 'cuti' : '';
+                                                    ?>
+                                                    <span class="time-slot <?= $class_status ?>"><?= $slot['teks'] ?></span><br>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <!-- Jika tidak ada jadwal, tampilkan tanda strip -->
+                                                <span class="no-schedule">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endforeach; ?>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+
+                </table>
+
+            </div>
         </div>
     </div>
 
-    <a class="nextButton" href="admin/index.php">Admin Page &#10137;</a>
+    <a class="nextButton" href="admin/index.php">&#10137;</a>
 </body>
 
 </html>
