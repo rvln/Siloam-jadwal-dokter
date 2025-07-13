@@ -122,6 +122,8 @@ $stmt->close();
         </div>
 
         <div class="modal-body">
+            <!-- error message placeholder -->
+            <div id="jadwalFormError"></div>
             <form id="jadwalForm" method="POST" action="../config/jadwal_action.php">
                 <input type="hidden" name="source" value="jadwalForm">
                 <input type="hidden" name="action" id="jadwalModalAction" value="create">
@@ -138,20 +140,6 @@ $stmt->close();
                 </div>
 
                 <div class="form-group">
-                    <label for="jadwalDay" class="form-label">Hari</label>
-                    <select id="jadwalDay" name="hari" class="form-select" required>
-                        <option value="">Pilih Hari</option>
-                        <option value="Senin">Senin</option>
-                        <option value="Selasa">Selasa</option>
-                        <option value="Rabu">Rabu</option>
-                        <option value="Kamis">Kamis</option>
-                        <option value="Jumat">Jum'at</option>
-                        <option value="Sabtu">Sabtu</option>
-                        <option value="Minggu">Minggu</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label for="jadwalStatus" class="form-label">Status</label>
                     <select id="jadwalStatus" name="status" class="form-select" required onchange="handleStatusChange()">
                         <option value="">Pilih Status</option>
@@ -160,21 +148,56 @@ $stmt->close();
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="jadwalStartTime" class="form-label">Jam Mulai</label>
-                    <input type="time" id="jadwalStartTime" name="jamMulai" class="form-control" required>
+                <div class="add-mode">
+                    <div class="form-group">
+                        <label for="jadwalDay" class="form-label">Hari</label>
+                        <div class="checkbox-group">
+                            <div><input type="checkbox" name="hari[]" value="Senin" id="hari-senin"> <label for="hari-senin">Senin</label></div>
+                            <div><input type="checkbox" name="hari[]" value="Selasa" id="hari-selasa"> <label for="hari-selasa">Selasa</label></div>
+                            <div><input type="checkbox" name="hari[]" value="Rabu" id="hari-rabu"> <label for="hari-rabu">Rabu</label></div>
+                            <div><input type="checkbox" name="hari[]" value="Kamis" id="hari-kamis"> <label for="hari-kamis">Kamis</label></div>
+                            <div><input type="checkbox" name="hari[]" value="Jumat" id="hari-jumat"> <label for="hari-jumat">Jumat</label></div>
+                            <div><input type="checkbox" name="hari[]" value="Sabtu" id="hari-sabtu"> <label for="hari-sabtu">Sabtu</label></div>
+                            <div><input type="checkbox" name="hari[]" value="Minggu" id="hari-minggu"> <label for="hari-minggu">Minggu</label></div>
+                        </div>
+                    </div>
+
+                    </hr>
+
+                    <div id="dynamic-time-inputs">
+                        <p class="text-center text-muted">Pilih hari untuk mengatur jam praktik.</p>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="jadwalEndTime" class="form-label">Jam Selesai</label>
-                    <input type="time" id="jadwalEndTime" name="jamSelesai" class="form-control" required>
+                <div class="edit-mode">
+                    <div class="form-group">
+                        <label for="jadwalDay" class="form-label">Hari</label>
+                        <select id="jadwalDay" name="hari" class="form-select">
+                            <option value="Senin">Senin</option>
+                            <option value="Selasa">Selasa</option>
+                            <option value="Rabu">Rabu</option>
+                            <option value="Kamis">Kamis</option>
+                            <option value="Jumat">Jum'at</option>
+                            <option value="Sabtu">Sabtu</option>
+                            <option value="Minggu">Minggu</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="jadwalStartTime" class="form-label">Jam Mulai</label>
+                        <input type="time" id="jadwalStartTime" name="jamMulai" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="jadwalEndTime" class="form-label">Jam Selesai</label>
+                        <input type="time" id="jadwalEndTime" name="jamSelesai" class="form-control">
+                    </div>
                 </div>
+
             </form>
         </div>
 
         <div class="modal-footer">
             <button type="button" class="btn btn-danger" onclick="closeModal('jadwalModal')">Batal</button>
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('jadwalForm').submit();">Simpan</button>
+            <button type="button" class="btn btn-primary" onclick="if(validateJadwalForm()){document.getElementById('jadwalForm').submit();}">Simpan</button>
         </div>
 
     </div>

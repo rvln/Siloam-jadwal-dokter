@@ -4,55 +4,82 @@ require_once 'connection.php';
 
 $action = $_POST['action'] ?? '';
 $source = $_POST['source'] ?? '';
-$id = $_POST['id'] ?? $_POST['jadwalId'] ?? null; // Bisa menerima 'id' atau 'jadwalId'
-$status = $_POST['status'] ?? null;
 $page = 'jadwal';
+$id = $_POST['id'] ?? $_POST['jadwalId'] ?? null;
 
-// update status
-if (isset($_POST['source']) && $_POST['source'] == 'jadwal_form') {
-    if ($action == 'update_status' && !empty($id) && isset($status)) {
-
-        if ($status == 'Cuti') {
-            $stmt = $conn->prepare("UPDATE jadwal SET status = ? WHERE id = ?");
-            $stmt->bind_param("si", $status, $id);
-        } else {
-            // Jika status diubah kembali ke 'Aktif'
-            $stmt = $conn->prepare("UPDATE jadwal SET status = ? WHERE id = ?");
-            $stmt->bind_param("si", $status, $id);
-        }
-
-        if ($stmt->execute()) {
-            $_SESSION['toast_message'] = ['text' => 'Status berhasil diperbarui!', 'type' => 'success'];
-        } else {
-            $_SESSION['toast_message'] = ['text' => 'Gagal memperbarui status.', 'type' => 'error'];
-        }
-    }
+$hari = $_POST['hari'] ?? [];
+if (!is_array($hari)) {
+    $hari = [$hari];
 }
 
-$action = $_POST['action'] ?? '';
-$source = $_POST['source'] ?? '';
-$id = $_POST['jadwalId'] ?? null;
-$dokter_id = $_POST['dokterId'] ?? null;
-$hari = $_POST['hari'] ?? '';
-$jam_mulai = $_POST['jamMulai'] ?? null;
-$jam_selesai = $_POST['jamSelesai'] ?? null;
-$status = $_POST['status'] ?? 'Aktif';
-$page = 'jadwal';
+if ($source === 'jadwal_form' && $action === 'update_status' && $id && isset($_POST['status'])) {
+    $status = $_POST['status'];
 
-if (isset($_POST['source']) && $_POST['source'] == 'jadwalForm') {
+    $stmt = $conn->prepare("UPDATE jadwal SET status = ? WHERE id = ?");
+    $stmt->bind_param("si", $status, $id);
 
-    //  CREATE action
+    if ($stmt->execute()) {
+        $_SESSION['toast_message'] = [
+            'text' => 'Status berhasil diperbarui!',
+            'type' => 'success'
+        ];
+    } else {
+        $_SESSION['toast_message'] = [
+            'text' => 'Gagal memperbarui status.',
+            'type' => 'error',
+            'error' => $stmt->error
+        ];
+    }
+
+    header("Location: ?page=" . $page);
+    exit();
+}
+
+if ($source === 'jadwalForm') {
+    $dokter_id = $_POST['dokterId'] ?? null;
+    $status = $_POST['status'] ?? 'Aktif';
+
+    // CREATE
     if ($action == 'create' && !empty($dokter_id) && !empty($hari)) {
-        // Jika status 'Cuti', set jam menjadi NULL
-        if ($status == 'Cuti') {
-            $jam_mulai = null;
-            $jam_selesai = null;
+        $stmt = $conn->prepare("INSERT INTO jadwal (dokter_id, hari, jam_mulai, jam_selesai, status) VALUES (?, ?, ?, ?, ?)");
+
+        $success = 0;
+        $err = 0;
+        $last_error = '';
+
+        foreach ($hari as $hari_spesifik) {
+            $jam_mulai_spesifik = null;
+            $jam_selesai_spesifik = null;
+
+            if ($status == 'Aktif') {
+                $jam_mulai_spesifik = $_POST['jam_mulai'][$hari_spesifik] ?? null;
+                $jam_selesai_spesifik = $_POST['jam_selesai'][$hari_spesifik] ?? null;
+
+                if (empty($jam_mulai_spesifik) || empty($jam_selesai_spesifik)) {
+                    $err++;
+                    $last_error = "Jam kosong untuk hari $hari_spesifik";
+                    continue;
+                }
+
+                if ($jam_mulai_spesifik >= $jam_selesai_spesifik) {
+                    $err++;
+                    $last_error = "Jam selesai harus setelah jam mulai untuk hari $hari_spesifik";
+                    continue;
+                }
+            }
+
+            $stmt->bind_param("issss", $dokter_id, $hari_spesifik, $jam_mulai_spesifik, $jam_selesai_spesifik, $status);
+
+            if ($stmt->execute()) {
+                $success++;
+            } else {
+                $err++;
+                $last_error = $stmt->error;
+            }
         }
 
-        $stmt = $conn->prepare("INSERT INTO jadwal (dokter_id, hari, jam_mulai, jam_selesai, status) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("issss", $dokter_id, $hari, $jam_mulai, $jam_selesai, $status);
 
-        if ($stmt->execute()) {
+        if ($success > 0) {
             $_SESSION['toast_message'] = [
                 'text' => 'Jadwal berhasil ditambahkan!',
                 'type' => 'success'
@@ -60,18 +87,24 @@ if (isset($_POST['source']) && $_POST['source'] == 'jadwalForm') {
         } else {
             $_SESSION['toast_message'] = [
                 'text' => 'Gagal menambahkan jadwal.',
-                'type' => 'error'
+                'type' => 'error',
+                'error' => $last_error
             ];
         }
+
         header("Location: ?page=" . $page);
         exit();
     }
 
-    //  UPDATE action
-    if ($action == 'update' && !empty($id)) {
 
-        $stmt = $conn->prepare("UPDATE jadwal SET dokter_id=?, hari=?, jam_mulai=?, jam_selesai=?, status=? WHERE id=?");
-        $stmt->bind_param("issssi", $dokter_id, $hari, $jam_mulai, $jam_selesai, $status, $id);
+    // UPDATE
+    if ($action === 'update' && !empty($id) && $dokter_id) {
+        $hari_str = $_POST['hari'] ?? null;
+        $jam_mulai_str = $_POST['jamMulai'] ?? null;
+        $jam_selesai_str = $_POST['jamSelesai'] ?? null;
+
+        $stmt = $conn->prepare("UPDATE jadwal SET dokter_id = ?, hari = ?, jam_mulai = ?, jam_selesai = ?, status = ? WHERE id = ?");
+        $stmt->bind_param("issssi", $dokter_id, $hari_str, $jam_mulai_str, $jam_selesai_str, $status, $id);
 
         if ($stmt->execute()) {
             $_SESSION['toast_message'] = [
@@ -81,16 +114,18 @@ if (isset($_POST['source']) && $_POST['source'] == 'jadwalForm') {
         } else {
             $_SESSION['toast_message'] = [
                 'text' => 'Gagal memperbarui jadwal.',
-                'type' => 'error'
+                'type' => 'error',
+                'error' => $stmt->error
             ];
         }
+
         header("Location: ?page=" . $page);
         exit();
     }
 
-    //  DELETE action
-    if ($action == 'delete' && !empty($id)) {
-        $stmt = $conn->prepare("DELETE FROM jadwal WHERE id=?");
+    // DELETE
+    if ($action === 'delete' && !empty($id)) {
+        $stmt = $conn->prepare("DELETE FROM jadwal WHERE id = ?");
         $stmt->bind_param("i", $id);
 
         if ($stmt->execute()) {
@@ -101,13 +136,16 @@ if (isset($_POST['source']) && $_POST['source'] == 'jadwalForm') {
         } else {
             $_SESSION['toast_message'] = [
                 'text' => 'Gagal menghapus jadwal.',
-                'type' => 'error'
+                'type' => 'error',
+                'error' => $stmt->error
             ];
         }
+
         header("Location: ?page=" . $page);
         exit();
     }
 }
 
+// Fallback redirect
 header("Location: ../admin/index.php?page=jadwal");
 exit();

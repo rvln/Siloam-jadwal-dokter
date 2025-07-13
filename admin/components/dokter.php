@@ -8,7 +8,7 @@ $data_dokter = "SELECT
                 FROM dokter d 
                 LEFT JOIN jadwal j ON d.id = j.dokter_id 
                 GROUP BY d.id, d.nama
-                ORDER BY d.id ASC";
+                ORDER BY d.nama ASC";
 
 $list_dokter = query($data_dokter);
 
@@ -27,6 +27,10 @@ $list_dokter = query($data_dokter);
             </button>
         </div>
         <div class="card-body">
+            <div class="form-group">
+                <label for="searchDokterInput" class="form-label">Cari Dokter</label>
+                <input type="text" id="searchDokterInput" class="form-control" onkeyup="filterDokterTable()" placeholder="Ketik nama dokter...">
+            </div>
             <div class="table-responsive">
                 <table class="table" id="dokterTable">
                     <thead>
@@ -49,7 +53,7 @@ $list_dokter = query($data_dokter);
                                     <td><?= $dokter['jumlah_jadwal'] ?></td>
                                     <td><?= $dokter['poli'] ?> </td>
                                     <td class="actions">
-                                        <button class="btn btn-warning btn-sm" onclick="openEditDokterModal(<?php echo $dokter['id']; ?>, '<?php echo htmlspecialchars($dokter['nama'], ENT_QUOTES); ?>')">
+                                        <button class="btn btn-warning btn-sm" onclick="openEditDokterModal(<?php echo $dokter['id']; ?>, '<?php echo htmlspecialchars($dokter['nama'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($dokter['poli'], ENT_QUOTES); ?>')">
                                             &#9998; Edit
                                         </button>
                                         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDokter(<?= $dokter['id'] ?>, '<?= htmlspecialchars($dokter['nama'], ENT_QUOTES) ?>')">
@@ -86,19 +90,7 @@ $list_dokter = query($data_dokter);
                     <label for="namaDokter" class="form-label">Nama Dokter</label>
                     <input type="text" name="namaDokter" id="namaDokter" class="form-control" required>
                     <label for="poliDokter" class="form-label">Poli</label>
-                    <select name="poliDokter" id="poliDokter" class="form-select" required>
-                        <option value="">Pilih Poli</option>
-                        <option value="Umum">Umum</option>
-                        <option value="Gigi">Gigi</option>
-                        <option value="Kandungan">Kandungan</option>
-                        <option value="Anak">Anak</option>
-                        <option value="THT">THT</option>
-                        <option value="Mata">Mata</option>
-                        <option value="Bedah">Bedah</option>
-                        <option value="Psikiatri">Psikiatri</option>
-                        <option value="Rehabilitasi">Rehabilitasi</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
+                    <input type="text" name="poliDokter" id="poliDokter" class="form-control" required>
                 </div>
             </form>
         </div>

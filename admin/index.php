@@ -72,26 +72,29 @@ $active_tab_sidebar = $_GET['page'] ?? 'dashboard';
 
     document.addEventListener('DOMContentLoaded', function() {
         <?php
-        // Periksa apakah ada pesan toast di session
-        if (isset($_SESSION['toast_message'])) {
-            $message = $_SESSION['toast_message']['text'];
-            $type = $_SESSION['toast_message']['type'];
+        if (isset($_SESSION['toast_message'])):
+            $toast_json = json_encode($_SESSION['toast_message']);
+            echo "const toastData = $toast_json;";
+        ?>
+            if (toastData.text && toastData.type) {
+                showToast(toastData.text, toastData.type);
+            }
 
-            // Cetak panggilan JavaScript untuk menampilkan toast
-            echo "showToast('$message', '$type');";
+            console.log('Debug toastData:', toastData);
 
-            // Hapus pesan dari session agar tidak muncul lagi
+            if (toastData.error) {
+                console.log('Kesalahan dari Server:', toastData.error);
+            }
+        <?php
             unset($_SESSION['toast_message']);
-        }
+        endif;
         ?>
     });
-
-    const statusDropdown = document.getElementById('jadwalStatus');
-    if (statusDropdown) {
-        statusDropdown.addEventListener('change', function() {
-            toggleTimeInputs(this.value);
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[name="hari[]"]').forEach(cb => {
+            cb.addEventListener('change', generateTimeInputs);
         });
-    }
+    });
 </script>
 
 </html>

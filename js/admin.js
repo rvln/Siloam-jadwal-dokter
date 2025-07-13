@@ -47,12 +47,13 @@ function openAddDokterModal() {
 }
 
 // Edit dokter modal
-function openEditDokterModal(id, nama) {
+function openEditDokterModal(id, nama, poli) {
     document.getElementById('dokterForm').reset()
     document.getElementById('dokterModalTitle').textContent = 'Edit Dokter';
     document.getElementById('dokterModalAction').value = 'update';
     document.getElementById('dokterId').value = id;
     document.getElementById('namaDokter').value = nama;
+    document.getElementById('poliDokter').value = poli;
     openModal('dokterModal');
 }
 
@@ -112,17 +113,52 @@ function validateDokterForm() {
     return true;
 }
 
+function filterDokterTable() {
+    let input = document.getElementById('searchDokterInput');
+    let filter = input.value.toUpperCase();
+
+    let tableBody = document.getElementById('dokterTableBody');
+    let tr = tableBody.getElementsByTagName('tr');
+
+    for (let i = 0; i < tr.length; i++) {
+        let td = tr[i].getElementsByTagName('td')[0];
+
+        if (td) {
+            let txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+
 // -------------------------------------------------------------------------------------------------------------------------------------------------
 // Create & Update & Delete jadwal
 // Create jadwal modal
 function openAddJadwalModal() {
-    document.getElementById('jadwalForm').reset();
+    const form = document.getElementById('jadwalForm');
+    document.querySelectorAll('input[name="hari[]"]').forEach(cb => cb.checked = false);
+
+    // Reset form
+    form.reset();
+
     document.getElementById('jadwalModalTitle').textContent = 'Tambah Jadwal';
     document.getElementById('jadwalModalAction').value = 'create';
+    document.querySelector('.add-mode').style.display = 'block';
+    document.querySelector('.edit-mode').style.display = 'none';
+    document.getElementById('dynamic-time-inputs').innerHTML = '<p class="text-center text-muted">Pilih hari untuk mengatur jam praktik.</p>';
+    // Disable input milik edit-mode agar tidak ikut terkirim
+    document.getElementById('jadwalDay').disabled = true;
+    document.getElementById('jadwalStartTime').disabled = true;
+    document.getElementById('jadwalEndTime').disabled = true;
+
     openModal('jadwalModal');
 }
 
-// Edit jadwal modal
+
+
 function openEditJadwalModal(id, dokterId, hari, jamMulai, jamSelesai, status) {
     document.getElementById('jadwalForm').reset();
     document.getElementById('jadwalModalTitle').textContent = 'Edit Jadwal';
@@ -133,8 +169,13 @@ function openEditJadwalModal(id, dokterId, hari, jamMulai, jamSelesai, status) {
     document.getElementById('jadwalStartTime').value = jamMulai;
     document.getElementById('jadwalEndTime').value = jamSelesai;
     document.getElementById('jadwalStatus').value = status;
+    document.querySelector('.add-mode').style.display = 'none';
+    document.querySelector('.edit-mode').style.display = 'block';
+    handleStatusChange();
+
     openModal('jadwalModal');
 }
+
 
 function toggleStatus(scheduleId, currentStatus) {
     const newStatus = currentStatus === 'Aktif' ? 'Cuti' : 'Aktif';
@@ -202,13 +243,10 @@ function filterJadwals() {
     const selectedPoli = document.getElementById('filterPoli').value;
     const url = new URL(window.location.href);
 
-    // 2. Atur parameter URL yang baru ('poli')
     url.searchParams.set('poli', selectedPoli);
 
-    // (Opsional) Hapus parameter lama agar URL bersih
     url.searchParams.delete('filter_dokter_id');
 
-    // 3. Arahkan ke URL baru
     window.location.href = url.toString();
 }
 
@@ -230,6 +268,126 @@ function handleStatusChange() {
         endTime.setAttribute('required', 'required');
     }
 }
+
+function validateJadwalForm() {
+    const action = document.getElementById('jadwalModalAction').value;
+    const dokterId = document.getElementById('jadwalDokterId').value;
+    const status = document.getElementById('jadwalStatus').value;
+    const errorDiv = document.getElementById('jadwalFormError');
+    let errorMessage = "";
+
+    if (!document.getElementById('jadwalFormErrorStyle')) {
+        const style = document.createElement('style');
+        style.id = 'jadwalFormErrorStyle';
+        style.textContent = `
+            #jadwalFormError {
+                color: white; background: #e74c3c; padding: 10px 16px;
+                border-radius: 4px; margin-bottom: 12px; opacity: 0;
+                transition: opacity 0.4s; display: none;
+            }
+            #jadwalFormError.show { display: block; opacity: 1; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    errorDiv.textContent = "";
+    errorDiv.classList.remove('show');
+    errorDiv.style.display = "none";
+
+
+    if (!dokterId) {
+        errorMessage = "Dokter harus dipilih.";
+    } else if (!status) {
+        errorMessage = "Status harus dipilih";
+    }
+
+    if (action === 'create') {
+        const checkedDays = document.querySelectorAll('input[name="hari[]"]:checked');
+        if (checkedDays.length === 0) {
+            errorMessage = "Pilih minimal satu hari untuk jadwal.";
+        } else if (status === 'Aktif') {
+            let allTimesValid = true;
+            let timeErrorMessage = "";
+
+            checkedDays.forEach(checkbox => {
+                const day = checkbox.value;
+                const jamMulaiInput = document.querySelector(`input[name="jam_mulai[${day}]"]`);
+                const jamSelesaiInput = document.querySelector(`input[name="jam_selesai[${day}]"]`);
+
+                if (!jamMulaiInput.value || !jamSelesaiInput.value) {
+                    timeErrorMessage = "Semua jam praktik harus diisi.";
+                    allTimesValid = false;
+                } else if (jamMulaiInput.value >= jamSelesaiInput.value) {
+                    timeErrorMessage = `Pada hari ${day}, Jam Selesai harus setelah Jam Mulai.`;
+                    allTimesValid = false;
+                }
+            });
+
+            if (!allTimesValid) {
+                errorMessage = timeErrorMessage;
+            }
+        }
+    } else if (action === 'update') {
+        const jamMulai = document.getElementById('jadwalStartTime').value;
+        const jamSelesai = document.getElementById('jadwalEndTime').value;
+
+        if (status === 'Aktif') {
+            if (!jamMulai || !jamSelesai) {
+                errorMessage = "Jam mulai dan selesai harus diisi.";
+            } else if (jamMulai >= jamSelesai) {
+                errorMessage = "Jam selesai harus setelah jam mulai.";
+            }
+        }
+    }
+
+    if (errorMessage) {
+        errorDiv.textContent = errorMessage;
+        errorDiv.style.display = "block";
+        setTimeout(() => { errorDiv.classList.add('show'); }, 10);
+        setTimeout(() => {
+            errorDiv.classList.remove('show');
+            setTimeout(() => { errorDiv.style.display = "none"; }, 400);
+        }, 3000);
+        return false;
+    }
+
+    return true;
+}
+
+function generateTimeInputs() {
+    const container = document.getElementById('dynamic-time-inputs');
+    container.innerHTML = '';
+
+    const checkedDays = document.querySelectorAll('input[name="hari[]"]:checked');
+    console.log("Hari dicentang:", [...checkedDays].map(cb => cb.value));
+
+    if (checkedDays.length === 0) {
+        container.innerHTML = '<p class="text-center text-muted">Pilih hari untuk mengatur jam praktik.</p>';
+        return;
+    }
+
+    checkedDays.forEach(checkbox => {
+        const day = checkbox.value;
+
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'form-group dynamic-group';
+        inputGroup.innerHTML = `
+            <label class="form-label"><strong>Waktu untuk Hari ${day}</strong></label>
+            <div class="time-pair">
+                <div>
+                    <label for="start-${day}">Jam Mulai</label>
+                    <input type="time" id="start-${day}" name="jam_mulai[${day}]" class="form-control" required>
+                </div>
+                <div>
+                    <label for="end-${day}">Jam Selesai</label>
+                    <input type="time" id="end-${day}" name="jam_selesai[${day}]" class="form-control" required>
+                </div>
+            </div>
+        `;
+        container.appendChild(inputGroup);
+    });
+}
+
 
 // -------------------------------------------------------------------------------------------------------------------------------------------------
 // Common functions
