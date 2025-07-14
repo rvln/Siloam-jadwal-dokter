@@ -3,7 +3,26 @@ $list_poli_dropdown = query("SELECT DISTINCT poli FROM dokter WHERE poli IS NOT 
 $list_dokter_dropdown = query("SELECT id, nama FROM dokter ORDER BY nama ASC");
 
 $filter_poli = $_GET['poli'] ?? '';
+$limit = isset($_GET['limit']) ? max(10, (int)$_GET['limit']) : 10;
+$page = isset($_GET['halaman']) ? max(1, (int)$_GET['halaman']) : 1;
+$offset = ($page - 1) * $limit;
 
+// Hitung total data
+$count_sql = "SELECT COUNT(*) FROM jadwal j JOIN dokter d ON j.dokter_id = d.id";
+if (!empty($filter_poli)) {
+    $count_sql .= " WHERE d.poli = ?";
+    $stmt = $conn->prepare($count_sql);
+    $stmt->bind_param("s", $filter_poli);
+} else {
+    $stmt = $conn->prepare($count_sql);
+}
+$stmt->execute();
+$stmt->bind_result($total_data);
+$stmt->fetch();
+$stmt->close();
+$total_pages = ceil($total_data / $limit);
+
+// Ambil data jadwal
 $data_jadwal_sql = "SELECT 
     j.id, 
     j.dokter_id,
@@ -17,20 +36,16 @@ FROM jadwal j
 JOIN dokter d ON j.dokter_id = d.id";
 
 if (!empty($filter_poli)) {
-    $data_jadwal_sql .= " WHERE d.poli = ? ORDER BY d.poli, d.nama ASC";
-    $stmt = $conn->prepare($data_jadwal_sql);
-    if ($stmt === false) {
-        die('Prepare failed: ' . htmlspecialchars($conn->error));
-    }
-    $stmt->bind_param("s", $filter_poli);
-} else {
-    $data_jadwal_sql .= " ORDER BY d.poli, d.nama ASC";
-    $stmt = $conn->prepare($data_jadwal_sql);
-    if ($stmt === false) {
-        die('Prepare failed: ' . htmlspecialchars($conn->error));
-    }
+    $data_jadwal_sql .= " WHERE d.poli = ?";
 }
+$data_jadwal_sql .= " ORDER BY d.poli, d.nama, j.hari ASC LIMIT ? OFFSET ?";
+$stmt = $conn->prepare($data_jadwal_sql);
 
+if (!empty($filter_poli)) {
+    $stmt->bind_param("sii", $filter_poli, $limit, $offset);
+} else {
+    $stmt->bind_param("ii", $limit, $offset);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 $list_jadwal = $result->fetch_all(MYSQLI_ASSOC);
@@ -62,6 +77,22 @@ $stmt->close();
                     <?php endforeach; ?>
                 </select>
             </div>
+
+            <form method="GET" class="limit-form">
+                <input type="hidden" name="page" value="jadwal">
+                <?php if ($filter_poli): ?>
+                    <input type="hidden" name="poli" value="<?= htmlspecialchars($filter_poli) ?>">
+                <?php endif; ?>
+
+                <label for="limit">Tampilkan</label>
+                <select name="limit" id="limit" onchange="this.form.submit()">
+                    <?php foreach ([10, 25, 50, 100, 500] as $opt): ?>
+                        <option value="<?= $opt ?>" <?= $limit == $opt ? 'selected' : '' ?>><?= $opt ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <label>data per halaman</label>
+            </form>
+
 
             <div class="table-responsive">
                 <table class="table" id="jadwalTable">
@@ -107,6 +138,24 @@ $stmt->close();
                         <?php endif; ?>
                     </tbody>
                 </table>
+                <?php if ($total_pages > 1): ?>
+                    <div class="pagination">
+                        <?php if ($page > 1): ?>
+                            <a href="?page=jadwal&halaman=<?= $page - 1 ?>&limit=<?= $limit ?><?= $filter_poli ? '&poli=' . urlencode($filter_poli) : '' ?>">&laquo; Sebelumnya</a>
+                        <?php endif; ?>
+
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <a href="?page=jadwal&halaman=<?= $i ?>&limit=<?= $limit ?><?= $filter_poli ? '&poli=' . urlencode($filter_poli) : '' ?>"
+                                class="<?= $i == $page ? 'active' : '' ?>">
+                                <?= $i ?>
+                            </a>
+                        <?php endfor; ?>
+
+                        <?php if ($page < $total_pages): ?>
+                            <a href="?page=jadwal&halaman=<?= $page + 1 ?>&limit=<?= $limit ?><?= $filter_poli ? '&poli=' . urlencode($filter_poli) : '' ?>">Berikutnya &raquo;</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

@@ -113,27 +113,6 @@ function validateDokterForm() {
     return true;
 }
 
-function filterDokterTable() {
-    let input = document.getElementById('searchDokterInput');
-    let filter = input.value.toUpperCase();
-
-    let tableBody = document.getElementById('dokterTableBody');
-    let tr = tableBody.getElementsByTagName('tr');
-
-    for (let i = 0; i < tr.length; i++) {
-        let td = tr[i].getElementsByTagName('td')[0];
-
-        if (td) {
-            let txtValue = td.textContent || td.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                tr[i].style.display = "";
-            } else {
-                tr[i].style.display = "none";
-            }
-        }
-    }
-}
-
 // -------------------------------------------------------------------------------------------------------------------------------------------------
 // Create & Update & Delete jadwal
 // Create jadwal modal

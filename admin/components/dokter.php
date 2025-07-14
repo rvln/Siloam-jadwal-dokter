@@ -1,5 +1,14 @@
 <?php
 // Get/Fetch data dokter dari database
+$keyword = $_GET['keyword'] ?? '';
+$limit = isset($_GET['limit']) ? max(10, (int)$_GET['limit']) : 10;
+$page = isset($_GET['halaman']) ? max(1, (int)$_GET['halaman']) : 1;
+$offset = ($page - 1) * $limit;
+
+$count_result = query("SELECT COUNT(*) as total FROM dokter");
+$total_data = $count_result[0]['total'] ?? 0;
+$total_pages = ceil($total_data / $limit);
+
 $data_dokter = "SELECT 
                     d.id, 
                     d.nama, 
@@ -8,9 +17,47 @@ $data_dokter = "SELECT
                 FROM dokter d 
                 LEFT JOIN jadwal j ON d.id = j.dokter_id 
                 GROUP BY d.id, d.nama
-                ORDER BY d.nama ASC";
-
+                ORDER BY d.nama ASC
+                LIMIT $limit OFFSET $offset";
 $list_dokter = query($data_dokter);
+
+if (!empty($keyword)) {
+    $count_query = "SELECT COUNT(*) as total FROM dokter WHERE nama LIKE ?";
+    $stmt = $conn->prepare($count_query);
+    $likeKeyword = "%" . $keyword . "%";
+    $stmt->bind_param("s", $likeKeyword);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $total_data = $result->fetch_assoc()['total'] ?? 0;
+    $stmt->close();
+} else {
+    $result = query("SELECT COUNT(*) as total FROM dokter");
+    $total_data = $result[0]['total'] ?? 0;
+}
+$total_pages = ceil($total_data / $limit);
+
+if (!empty($keyword)) {
+    $stmt = $conn->prepare("SELECT d.id, d.nama, d.poli, COUNT(j.id) as jumlah_jadwal 
+                            FROM dokter d 
+                            LEFT JOIN jadwal j ON d.id = j.dokter_id 
+                            WHERE d.nama LIKE ?
+                            GROUP BY d.id, d.nama
+                            ORDER BY d.nama ASC
+                            LIMIT ? OFFSET ?");
+    $stmt->bind_param("sii", $likeKeyword, $limit, $offset);
+} else {
+    $stmt = $conn->prepare("SELECT d.id, d.nama, d.poli, COUNT(j.id) as jumlah_jadwal 
+                            FROM dokter d 
+                            LEFT JOIN jadwal j ON d.id = j.dokter_id 
+                            GROUP BY d.id, d.nama
+                            ORDER BY d.nama ASC
+                            LIMIT ? OFFSET ?");
+    $stmt->bind_param("ii", $limit, $offset);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+$list_dokter = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 ?>
 
@@ -27,11 +74,27 @@ $list_dokter = query($data_dokter);
             </button>
         </div>
         <div class="card-body">
-            <div class="form-group">
-                <label for="searchDokterInput" class="form-label">Cari Dokter</label>
-                <input type="text" id="searchDokterInput" class="form-control" onkeyup="filterDokterTable()" placeholder="Ketik nama dokter...">
-            </div>
+            <form method="GET" class="search-form">
+                <input type="hidden" name="page" value="dokter">
+                <div class="form-group">
+                    <label for="searchDokterInput" class="form-label">Cari Dokter</label>
+                    <input type="text" id="searchDokterInput" name="keyword" class="form-control" placeholder="Ketik nama dokter..." value="<?= htmlspecialchars($keyword) ?>">
+                </div>
+                <button type="submit">Cari</button>
+            </form>
+
             <div class="table-responsive">
+                <form method="GET" class="limit-form">
+                    <input type="hidden" name="page" value="dokter">
+                    <label for="limit">Tampilkan</label>
+                    <select name="limit" id="limit" onchange="this.form.submit()">
+                        <?php foreach ([10, 25, 50, 100] as $opt): ?>
+                            <option value="<?= $opt ?>" <?= $limit == $opt ? 'selected' : '' ?>><?= $opt ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <label>data per halaman</label>
+                </form>
+
                 <table class="table" id="dokterTable">
                     <thead>
                         <tr>
@@ -65,6 +128,24 @@ $list_dokter = query($data_dokter);
                         <?php endif; ?>
                     </tbody>
                 </table>
+                <?php if ($total_pages > 1): ?>
+                    <div class="pagination">
+                        <?php if ($page > 1): ?>
+                            <a href="?page=dokter&halaman=<?= $page - 1 ?>&limit=<?= $limit ?>">&laquo; Sebelumnya</a>
+                        <?php endif; ?>
+
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <a href="?page=dokter&halaman=<?= $i ?>&limit=<?= $limit ?>" class="<?= $i == $page ? 'active' : '' ?>">
+                                <?= $i ?>
+                            </a>
+                        <?php endfor; ?>
+
+                        <?php if ($page < $total_pages): ?>
+                            <a href="?page=dokter&halaman=<?= $page + 1 ?>&limit=<?= $limit ?>">Berikutnya &raquo;</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
             </div>
         </div>
     </div>
