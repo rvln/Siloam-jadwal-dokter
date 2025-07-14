@@ -3,27 +3,43 @@ $list_poli_dropdown = query("SELECT DISTINCT poli FROM dokter WHERE poli IS NOT 
 $list_dokter_dropdown = query("SELECT id, nama FROM dokter ORDER BY nama ASC");
 
 $filter_poli = $_GET['poli'] ?? '';
+$keyword = $_GET['keyword'] ?? '';
 $limit = isset($_GET['limit']) ? max(10, (int)$_GET['limit']) : 10;
 $page = isset($_GET['halaman']) ? max(1, (int)$_GET['halaman']) : 1;
 $offset = ($page - 1) * $limit;
 
 // Hitung total data
-$count_sql = "SELECT COUNT(*) FROM jadwal j JOIN dokter d ON j.dokter_id = d.id";
+$count_sql = "SELECT COUNT(*) 
+              FROM jadwal j 
+              JOIN dokter d ON j.dokter_id = d.id 
+              WHERE 1";
+$params = [];
+$types = '';
+
 if (!empty($filter_poli)) {
-    $count_sql .= " WHERE d.poli = ?";
-    $stmt = $conn->prepare($count_sql);
-    $stmt->bind_param("s", $filter_poli);
-} else {
-    $stmt = $conn->prepare($count_sql);
+    $count_sql .= " AND d.poli = ?";
+    $params[] = $filter_poli;
+    $types .= 's';
+}
+if (!empty($keyword)) {
+    $count_sql .= " AND d.nama LIKE ?";
+    $params[] = '%' . $keyword . '%';
+    $types .= 's';
+}
+
+$stmt = $conn->prepare($count_sql);
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
 }
 $stmt->execute();
 $stmt->bind_result($total_data);
 $stmt->fetch();
 $stmt->close();
+
 $total_pages = ceil($total_data / $limit);
 
 // Ambil data jadwal
-$data_jadwal_sql = "SELECT 
+$data_sql = "SELECT 
     j.id, 
     j.dokter_id,
     d.nama AS dokter,
@@ -33,19 +49,30 @@ $data_jadwal_sql = "SELECT
     j.jam_selesai, 
     j.status
 FROM jadwal j
-JOIN dokter d ON j.dokter_id = d.id";
+JOIN dokter d ON j.dokter_id = d.id
+WHERE 1";
+
+$params = [];
+$types = '';
 
 if (!empty($filter_poli)) {
-    $data_jadwal_sql .= " WHERE d.poli = ?";
+    $data_sql .= " AND d.poli = ?";
+    $params[] = $filter_poli;
+    $types .= 's';
 }
-$data_jadwal_sql .= " ORDER BY d.poli, d.nama, j.hari ASC LIMIT ? OFFSET ?";
-$stmt = $conn->prepare($data_jadwal_sql);
+if (!empty($keyword)) {
+    $data_sql .= " AND d.nama LIKE ?";
+    $params[] = '%' . $keyword . '%';
+    $types .= 's';
+}
 
-if (!empty($filter_poli)) {
-    $stmt->bind_param("sii", $filter_poli, $limit, $offset);
-} else {
-    $stmt->bind_param("ii", $limit, $offset);
-}
+$data_sql .= " ORDER BY d.poli, d.nama ASC LIMIT ? OFFSET ?";
+$params[] = $limit;
+$params[] = $offset;
+$types .= 'ii';
+
+$stmt = $conn->prepare($data_sql);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 $list_jadwal = $result->fetch_all(MYSQLI_ASSOC);
@@ -66,33 +93,41 @@ $stmt->close();
         </div>
         <div class="card-body">
 
-            <div class="form-group">
-                <label for="filterPoli" class="form-label">Filter Poli</label>
-                <select id="filterPoli" class="form-select" onchange="filterJadwals()">
-                    <option value="">Semua Poli</option>
-                    <?php foreach ($list_poli_dropdown as $poli): ?>
-                        <option value="<?= htmlspecialchars($poli['poli']) ?>" <?= ($filter_poli == $poli['poli']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($poli['poli']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <form method="GET" class="limit-form">
+            <form method="GET" class="filter-form">
                 <input type="hidden" name="page" value="jadwal">
-                <?php if ($filter_poli): ?>
-                    <input type="hidden" name="poli" value="<?= htmlspecialchars($filter_poli) ?>">
-                <?php endif; ?>
 
-                <label for="limit">Tampilkan</label>
-                <select name="limit" id="limit" onchange="this.form.submit()">
-                    <?php foreach ([10, 25, 50, 100, 500] as $opt): ?>
-                        <option value="<?= $opt ?>" <?= $limit == $opt ? 'selected' : '' ?>><?= $opt ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <label>data per halaman</label>
+                <div class="filter-item">
+                    <label for="searchJadwal">Cari Dokter</label>
+                    <input type="text" id="searchJadwal" name="keyword" class="form-control" placeholder="Ketik nama dokter..." value="<?= htmlspecialchars($keyword ?? '') ?>">
+                </div>
+
+                <div class="filter-item button-container">
+                    <button type="submit">Cari</button>
+                </div>
+
+                <div class="filter-item">
+                    <label for="filterPoli">Filter Poli</label>
+                    <select id="filterPoli" name="poli" class="form-select" onchange="this.form.submit()">
+                        <option value="">Semua Poli</option>
+                        <?php foreach ($list_poli_dropdown as $poli): ?>
+                            <option value="<?= htmlspecialchars($poli['poli']) ?>" <?= ($filter_poli == $poli['poli']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($poli['poli']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="limit">Tampilkan</label>
+                    <select name="limit" id="limit" class="form-select" onchange="this.form.submit()">
+                        <?php foreach ([10, 25, 50, 100, 500] as $opt): ?>
+                            <option value="<?= $opt ?>" <?= $limit == $opt ? 'selected' : '' ?>><?= $opt ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+
             </form>
-
 
             <div class="table-responsive">
                 <table class="table" id="jadwalTable">
@@ -141,18 +176,17 @@ $stmt->close();
                 <?php if ($total_pages > 1): ?>
                     <div class="pagination">
                         <?php if ($page > 1): ?>
-                            <a href="?page=jadwal&halaman=<?= $page - 1 ?>&limit=<?= $limit ?><?= $filter_poli ? '&poli=' . urlencode($filter_poli) : '' ?>">&laquo; Sebelumnya</a>
+                            <a href="?page=jadwal&halaman=<?= $page - 1 ?>&limit=<?= $limit ?>&poli=<?= urlencode($filter_poli) ?>&keyword=<?= urlencode($keyword) ?>">&laquo; Sebelumnya</a>
                         <?php endif; ?>
 
                         <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <a href="?page=jadwal&halaman=<?= $i ?>&limit=<?= $limit ?><?= $filter_poli ? '&poli=' . urlencode($filter_poli) : '' ?>"
-                                class="<?= $i == $page ? 'active' : '' ?>">
+                            <a href="?page=jadwal&halaman=<?= $i ?>&limit=<?= $limit ?>&poli=<?= urlencode($filter_poli) ?>&keyword=<?= urlencode($keyword) ?>" class="<?= $i == $page ? 'active' : '' ?>">
                                 <?= $i ?>
                             </a>
                         <?php endfor; ?>
 
                         <?php if ($page < $total_pages): ?>
-                            <a href="?page=jadwal&halaman=<?= $page + 1 ?>&limit=<?= $limit ?><?= $filter_poli ? '&poli=' . urlencode($filter_poli) : '' ?>">Berikutnya &raquo;</a>
+                            <a href="?page=jadwal&halaman=<?= $page + 1 ?>&limit=<?= $limit ?>&poli=<?= urlencode($filter_poli) ?>&keyword=<?= urlencode($keyword) ?>">Berikutnya &raquo;</a>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>

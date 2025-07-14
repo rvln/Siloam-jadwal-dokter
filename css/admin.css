@@ -712,7 +712,6 @@ body {
 }
 
 .limit-form {
-  margin-bottom: 1em;
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -744,35 +743,71 @@ body {
     gap: 0.25em;
   }
 }
-
-.search-form {
+/* Container Form Utama */
+.filter-form {
   display: flex;
-  align-items: center;
-  gap: 0.5em;
+  flex-wrap: wrap; /* Kunci utama untuk responsivitas */
+  gap: 1rem; /* Jarak antar item filter */
+  align-items: flex-end; /* Menyelaraskan semua item ke bawah */
+  margin-bottom: 0.5rem;
 }
 
-.search-form input[type="text"] {
-  width: 500px;
-  max-width: 100%;
-  padding: 0.5em;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+/* Setiap item filter (pembungkus label dan input) */
+.filter-item {
+  display: flex;
+  flex-direction: column; /* Menyusun label di atas input */
+  gap: 0.35rem; /* Jarak antara label dan input */
+  flex: 1 1 200px; /* Fleksibel: bisa membesar, bisa mengecil, basis 200px */
+}
+
+/* Styling untuk semua label di dalam form */
+.filter-item label {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Styling konsisten untuk input text dan select box */
+.filter-item input[type="text"],
+.filter-item select {
+  width: 100%; /* Mengisi lebar .filter-item */
+  padding: 0.75em;
   font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
   box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.search-form button {
-  padding: 0.5em 1em;
+/* Efek visual saat input/select di-klik (fokus) */
+.filter-item input[type="text"]:focus,
+.filter-item select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+/* Pembungkus tombol agar bisa diatur posisinya */
+.filter-item.button-container {
+  flex-grow: 0; /* Agar tidak meregang selebar item lain */
+  align-self: flex-end; /* Memastikan tetap di bawah */
+}
+
+/* Tombol Cari */
+.filter-form button {
+  width: 100%;
+  padding: 0.75em 1.5em;
   background: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 1em;
-  margin-left: 0.5em;
-  transition: background 0.2s;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
-.search-form button:hover {
+.filter-form button:hover {
   background: #0056b3;
 }

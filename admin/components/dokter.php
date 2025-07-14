@@ -74,27 +74,34 @@ $stmt->close();
             </button>
         </div>
         <div class="card-body">
-            <form method="GET" class="search-form">
+            <form method="GET" class="filter-form">
                 <input type="hidden" name="page" value="dokter">
-                <div class="form-group">
-                    <label for="searchDokterInput" class="form-label">Cari Dokter</label>
-                    <input type="text" id="searchDokterInput" name="keyword" class="form-control" placeholder="Ketik nama dokter..." value="<?= htmlspecialchars($keyword) ?>">
-                </div>
-                <button type="submit">Cari</button>
-            </form>
 
-            <div class="table-responsive">
-                <form method="GET" class="limit-form">
-                    <input type="hidden" name="page" value="dokter">
+                <div class="filter-item">
+                    <label for="searchDokterInput">Cari Dokter</label>
+                    <input
+                        type="text"
+                        id="searchDokterInput"
+                        name="keyword"
+                        class="form-control"
+                        placeholder="Ketik nama dokter..."
+                        value="<?= htmlspecialchars($keyword ?? '') ?>">
+                </div>
+                <div class="filter-item button-container">
+                    <button type="submit">Cari</button>
+                </div>
+
+                <div class="filter-item">
                     <label for="limit">Tampilkan</label>
                     <select name="limit" id="limit" onchange="this.form.submit()">
                         <?php foreach ([10, 25, 50, 100] as $opt): ?>
                             <option value="<?= $opt ?>" <?= $limit == $opt ? 'selected' : '' ?>><?= $opt ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <label>data per halaman</label>
-                </form>
+                </div>
+            </form>
 
+            <div class="table-responsive">
                 <table class="table" id="dokterTable">
                     <thead>
                         <tr>
