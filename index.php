@@ -55,16 +55,6 @@ $urutan_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
 <body>
     <div class="container">
-
-        <div class="header">
-            <div class="header-content">
-                <img src="public/logo.png" alt="Logo Siloam" class="logo">
-                <p class="subtitle">
-                    Jadwal Dokter
-                </p>
-            </div>
-        </div>
-
         <div class="table-container">
             <div>
                 <div id="clock">Loading</div>
