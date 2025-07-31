@@ -36,7 +36,6 @@ body::before {
 .header {
   background: linear-gradient(135deg, #2c5aa0 0%, #1e4080 100%);
   color: white;
-  padding: 0 40px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -70,7 +69,7 @@ body::before {
 .logo {
   width: 250px;
   height: auto;
-  margin-bottom: 16px;
+  margin-bottom: 5px;
 }
 
 .title {
@@ -114,7 +113,7 @@ body::before {
 }
 
 .table-container {
-  padding: 20px;
+  padding: 12px;
   overflow-x: auto;
   overflow: hidden;
 }
@@ -175,20 +174,12 @@ body::before {
 
 .doctor-name {
   font-weight: 700;
-  text-align: left;
-  padding-left: 24px;
   font-size: 20px;
   color: #000000;
   cursor: pointer;
-  display: flex;
+  text-align: left !important;
   align-items: center;
-  gap: 12px;
   transition: all 0.3s ease;
-}
-
-.doctor-name::before {
-  font-size: 1.5rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .doctor-name:hover {
@@ -286,10 +277,6 @@ body::before {
 
   .title {
     font-size: 2.5rem;
-  }
-
-  .table-container {
-    padding: 20px;
   }
 
   .schedule-table th,
