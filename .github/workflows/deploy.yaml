@@ -16,5 +16,4 @@ jobs:
           password: ${{ secrets.FTP_SILOAM_PASSWORD }}
           protocol: ${{ secrets.FTP_SILOAM_PROTOCOL }}
           local-dir: ./
-          server-dir: /public_html/
           timeout: 190000
