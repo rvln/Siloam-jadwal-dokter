@@ -1,19 +1,15 @@
-name: Deploy to cPanel
-
-on:
-  push:
-    branches:
-      - main
-
+on: push
+name: 🚀 Deploy website on push
 jobs:
-  ftp-deploy:
+  web-deploy:
+    name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
 
-      - name: Sync files via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SILOAM_SERVER }}
           username: ${{ secrets.FTP_SILOAM_USERNAME }}
