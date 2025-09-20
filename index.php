@@ -161,15 +161,15 @@ if ($list_jadwal) {
     <!-- <a class="nextButton" href="admin/index.php">&#10137;</a> -->
 
     <!-- SEO: Internal Links Footer -->
-    <footer class="site-footer">
+    <!-- <footer class="site-footer">
         <div class="footer-content">
-            <p>&copy; <?php echo date("Y"); ?> Rumah Sakit Siloam Manado.</p>
-            <!-- <ul class="footer-links">
+            <p>Rumah Sakit Siloam Manado.</p>
+            <ul class="footer-links">
                 <li><a href="#">Tentang Kami</a></li>
                 <li><a href="#">Hubungi Kami</a></li>
-            </ul> -->
+            </ul>
         </div>
-    </footer>
+    </footer> -->
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
