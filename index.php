@@ -36,14 +36,32 @@ if ($list_jadwal) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Dokter Terkini - Rumah Sakit Siloam</title>
+    
+    <!-- SEO: Meta Description -->
+    <meta name="description" content="Temukan jadwal praktik dokter spesialis di Rumah Sakit Siloam dengan mudah. Cari dokter berdasarkan nama, poli, dan hari praktik. Informasi jadwal dokter terkini dan akurat.">
+
+    <!-- SEO: Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.jadwal-siloam-manado.my.id">
+    <meta property="og:title" content="Jadwal Dokter Terkini - Rumah Sakit Siloam Manado">
+    <meta property="og:description" content="Cari dan temukan jadwal praktik dokter spesialis kami dengan mudah.">
+    <meta property="og:image" content="https://jadwal-siloam-manado.my.id/public/ogimagesiloam.jpg">
+
+    <!-- SEO: Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://jadwal-siloam-manado.my.id/">
+    <meta property="twitter:title" content="Jadwal Dokter Terkini - Rumah Sakit Siloam Manado">
+    <meta property="twitter:description" content="Cari dan temukan jadwal praktik dokter spesialis kami dengan mudah.">
+    <meta property="twitter:image" content="https://jadwal-siloam-manado.my.id/public/ogimagesiloam.jpg">
+
     <link rel="stylesheet" href="css/index.css">
-    <title>Jadwal Dokter</title>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <img src="public/logo.png" alt="Logo Siloam" class="logo">
-            <p class="subtitle">Jadwal Dokter</p>
+            <h1 class="subtitle">Jadwal Dokter</h1>
         </div>
         <div class="table-container">
             <div class="filter-form">
@@ -141,6 +159,17 @@ if ($list_jadwal) {
         </div>
     </div>
     <!-- <a class="nextButton" href="admin/index.php">&#10137;</a> -->
+
+    <!-- SEO: Internal Links Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; <?php echo date("Y"); ?> Rumah Sakit Siloam Manado.</p>
+            <!-- <ul class="footer-links">
+                <li><a href="#">Tentang Kami</a></li>
+                <li><a href="#">Hubungi Kami</a></li>
+            </ul> -->
+        </div>
+    </footer>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {

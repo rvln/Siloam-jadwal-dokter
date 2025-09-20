@@ -28,10 +28,12 @@ body {
   height: auto;
   margin-bottom: 5px;
 }
+/* Applied to the new H1 tag */
 .subtitle {
   font-size: 1.5rem;
   opacity: 0.9;
   font-weight: 500;
+  margin: 0; /* Reset margin for H1 */
 }
 .table-container {
   padding: 20px;
@@ -163,7 +165,7 @@ body {
 }
 .time-slot {
   color: #333;
-  font-size: 12px;
+  font-size: 1.1em;
   font-weight: 500;
   background: #e8f5e9;
   padding: 8px 12px;
@@ -223,6 +225,45 @@ body {
 .mobile-schedule-container {
   display: none;
 }
+
+/* --- SEO: Footer Styles --- */
+.site-footer {
+  margin-top: 10px;
+  padding: 15px;
+  text-align: center;
+  background-color: transparent;
+  color: #eff1f1;
+  font-size: 0.9rem;
+}
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+.footer-links li {
+  display: inline;
+  margin: 0 10px;
+}
+.footer-links a {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background-color: #007bff; /* warna dasar tombol */
+  color: #fff; /* teks putih */
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.footer-links a:hover {
+  background-color: #0056b3; /* warna saat hover */
+  transform: translateY(-2px); /* sedikit naik */
+}
+
+.footer-links a:active {
+  transform: translateY(0); /* balik normal saat diklik */
+}
+
 @media (max-width: 768px) {
   /* --- PERUBAHAN UNTUK WHITESPACE DI SINI --- */
   body {
